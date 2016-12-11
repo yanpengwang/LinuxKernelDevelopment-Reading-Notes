@@ -1,7 +1,7 @@
 #
 # LinuxKernelDevelopment-Reading-Notes
 # Create in 2016.12 as a review of previous reading
-# Book author Robert Love
+# Book info: the third edition, 2010, by Robert Love
 # Better view with raw format
 # 
 
