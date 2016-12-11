@@ -1,8 +1,10 @@
 #
-# LinuxKernelDevelopment-Reading-Notes in 2016.12
+# LinuxKernelDevelopment-Reading-Notes
+# Create in 2016.12 as a review of previous reading
 # Book author Robert Love
 # Better view with raw format
 # 
+
 Chatper 1: Introduction to the Linux Kernel
 
 1.1 In the summer of 1969, Bell Lab programmers sketched out a filesystem design that ultimately evolved into Unix.
@@ -38,7 +40,26 @@ Chatper 1: Introduction to the Linux Kernel
     - In kernel-space, in process context, executing on behalf of a specific process
     - In kernel-space, in interrupt context, not associated with a process, handling an interrupt.
     
+1.8 Linux is a monolithic kernel; that is; the Linux kernel executes in a single address space entirely in kernel mode.
+    Linux borrows much of good from microkernels(Windows XP, Vista, 7, Mach):
+    - Linux boasts a modular design
+    - the capability to preempt itself(kernel preemption)
+    - support for kernel threads
+    - the capability to dynamically load seperate binaries(kernel modules) into the kernel image.
+    
+1.9 (version 2.6.1.1)The minor release (6) also determines whether the kernel is a stable or development kernel; 
+    an even number is stable; whereas an odd number is development.
     
     
-    
-    
+Chapter 2. Getting started with the Kernel
+
+2.1 The linux kernel has serveral unique attributes as compared to a normal user-space application:
+    - The kernel has access to neither the C library nor the standard C headers.
+    - The kernel is coded in GNU C.
+    - The kernel lacks the memory protection afforded to user-space.
+    - The kernel cannot easily execute floating-point operations.
+    - The kernel has a small per-process fixed-size stack.
+    - Because the kernel has asynchronous interrupts, is preemptive, and supports SMP, synchronization and 
+      concurrency are major concerns within the kernel. 
+    - Portability is important.
+
