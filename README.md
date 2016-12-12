@@ -108,3 +108,8 @@ Chapter 3. Process Management
       
    3.7 The fork() creates a child process that is a copy of the current task. exec() loads a new executable into the 
        address space and begins executing it.
+
+   3.8 Copy-on-Write delays the copying of each page in the address space until it is actually written to. if exec()
+       is called immediately after fork()-they never need to be copied.
+       
+       
