@@ -88,3 +88,17 @@ Chapter 3. Process Management
     that describes the executing program-open files, the process's address space, pending signals, the process's
     state, and much more.
     
+ 3.4 The task_struct structure is allocated via the slab allocator to provide object reuse and cache coloring.
+     A new structure, struct thread_info, was created that again lives at the bottom of the stack(for stacks grow down)
+     Inside the kernel, tasks are typically referenced directly by a pointer to their task_struct structure.
+     
+ 3.5 Process state. Each process on the system is in exactly one of five different states:
+     - TASK_RUNNING: The process is runnable; it is either currently running or on a runqueue waiting to run.
+       This is the only possible state for a process executing in user-space; it can also apply to a process in 
+       kernel-space that is actively running.
+     - TASK_INTERRUPTBLE: The process is sleeping, waiting for some condition to exist. 
+     - TASK_UNINTERRUPTIBLE: This state is identical to TASK_INTERRUPTBLE except that it does not wake up and become
+       runnable if it receives a signal. (The case you cannot send it a SIGKILL signal)
+     - TASK_TRACED: The process is being traced by another process, such as a debugger, via ptrace.
+     - TASK_STOPPED: Process execution has stopped. 
+       
