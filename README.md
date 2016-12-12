@@ -102,3 +102,9 @@ Chapter 3. Process Management
      - TASK_TRACED: The process is being traced by another process, such as a debugger, via ptrace.
      - TASK_STOPPED: Process execution has stopped. 
        
+  3.6 All processes are descendants of the init process, whose PID is one. The kernel starts init in the last step of 
+      the boot process. The init process, in turn, reads the system initscripts and executes more programs, eventually
+      completing the boot process.
+      
+   3.7 The fork() creates a child process that is a copy of the current task. exec() loads a new executable into the 
+       address space and begins executing it.
