@@ -70,3 +70,21 @@ Chapter 2. Getting started with the Kernel
     - Portability is important.
       (A handful of rules - such as remain endian neutral, be 64-bit clean, do not assume the word or page size)
 
+Chapter 3. Process Management
+
+3.1 Each thread includes a unique program counter, process stack, and set of processor registers.
+
+3.2 Process lifecycle: fork() creates a new process by duplicating an existing one - parent. 
+    After fork() the parent resumes execution and the child starts execution at the same place.
+    Often, immediately after a fork it is desirable to execute a new, different program. The exec()
+    family of function calls creates a new address space and loads a new program into it. 
+    Finally, a program exists via the exit() system call. The function terminates the process and frees
+    all its resources. A parent process can inquire about the status of a terminated child via the wait4()
+    system call. When a process exits, it is placed into a special zombie state that represents terminated
+    processes until the parent call wait() or waitpid().
+    
+3.3 The kernel stores the list of processes in a circular doubly linked list called the task list. Each
+    element in the task list is a process descriptor of the type struct task_struct, which contains the data
+    that describes the executing program-open files, the process's address space, pending signals, the process's
+    state, and much more.
+    
