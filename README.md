@@ -55,11 +55,18 @@ Chapter 2. Getting started with the Kernel
 
 2.1 The linux kernel has serveral unique attributes as compared to a normal user-space application:
     - The kernel has access to neither the C library nor the standard C headers.
+      (the kernel is not linked against the standard C library- or any other library)
     - The kernel is coded in GNU C.
+      (The linux kernel developers use both ISO C99 and GNU C extensions to the C language)
     - The kernel lacks the memory protection afforded to user-space.
+      (Kernel memory is not pageable, therefore, every byte of memory you consume is one less byte
+      of available physical memory.) 
     - The kernel cannot easily execute floating-point operations.
     - The kernel has a small per-process fixed-size stack.
+      (The kernel stack is neither large nor dynamic, it is small and fixed in size. Historically, the 
+      kernel stack is two pages, which generally implies that it is 8KB on 32-bit architecture and 16KB on 64-bit)
     - Because the kernel has asynchronous interrupts, is preemptive, and supports SMP, synchronization and 
       concurrency are major concerns within the kernel. 
     - Portability is important.
+      (A handful of rules - such as remain endian neutral, be 64-bit clean, do not assume the word or page size)
 
