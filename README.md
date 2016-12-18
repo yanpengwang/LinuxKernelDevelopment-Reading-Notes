@@ -357,4 +357,92 @@ fits-all algorithm hard to achive.
 
 
 
+Chatper 5 system calls
+
+5.1
+System calls provide a layer between the hardware and user-space processes.
+- Provides an abstracted hareware interface for user-space.
+- Ensure system security and stability.
+- A single common layer between user-space and the rest of the system allows
+  for the virtualized system provided to processes. System calls are the only 
+  means user-space has of interfacing with the kernel, are the only legal
+  entry point into the kernel other than exceptions and traps.
+  
+5.2
+A meme related to interfaces in Unix is "Provide mechanism, not policy".
+In other words, Unix system calls exist to provide a specific function in an
+abstract sense. The manner in which the function is used is not any of the
+kernel's business.
+
+5.3
+The C library, when a system call returns an error, writes a special error
+code into the global errno variable. This variable can be translated into 
+human readable errors via library functions such as perror().
+
+5.4
+asmlinkage long sys_getpid(void)
+asmlinkage is a directive to tell the compiler to look only on the stack for 
+this function's arguments, p.s by default via registers. The function returns 
+long for compatibility between 32 and 64 bit systems.
+
+5.5
+The kernel keeps a list of all registered system calls in the system call table,
+on x86-64 it is defined in arch/x86/kernel/syscall_64.c.
+
+5.6
+The mechanism to signal the kernel is a software interrupt: Incur an exception,
+and the system will switch to kernel mode and execute the exception handler.
+The exception handler, in this case, is actually the system call handler.
+The defined software interrupt on x86 is interrupt number 128, i.e 0x80.
+On x86, the syscall number is fed to the kernel via the eax register.
+
+5.7 syscall parameter passing
+Most syscalls require that one or more parameters be passed to them. On x86-32,
+the registers ebx, ecx, edx, esi and edi contain, in order, the first five 
+arguments. If there are six or more arguments, a single register is used to
+hold a pointer to user-space where all the paremeters are stored.
+on x86, the return value is written to eax register.
+
+5.8
+When you write a system call, you need to realize the need for portability and
+robustness, not just today but in the future. 
+Every parameter must be checked to ensure it is not just valid and legal, but 
+correct. The kernel code msut never blindly follow a pointer into user-space.
+
+5.9
+For writing into user-space, the method copy_to_user() is provided. It takes
+three parameters. The first is the destination memory address in the process's
+address space. The second is the source pointer in kernel-space. The third is 
+the size in bytes of the data to copy. copy_from_user() is analogous to 
+copy_to_user(). Both of them may block, which occurs if the page containing
+the user data is not in physical memory but is swapped to disk. In that case,
+the process sleeps until the page fault handler can bring the page from the 
+swap file on disk into physical memory.
+
+5.10
+The kernel is in process context during the execution of a system call. The
+current pointer points to the current task, which is the process that issued
+the syscall. In process context, the kernel is capable of sleeping and is fully
+preemptible. 
+- Interrupt handlers cannot sleep and thus are much more limited in
+  what they can do than system calls running in process context.
+- Because the new task may then execute the same system call, care must be
+  exercised to ensure that system calls are reentrant.
+When the system call returns, control continues in system_call(), the syscall 
+handler, which ultimately switches to user-space and continues the execution
+of the user process.
+
+5.11
+The steps in binding a system call - foo():
+- Add sys_foo() to the system call table, like entry.S file: ".long sys_foo"
+- Add system call number to <asm/unistd.h>: "#define _NR_foo 338"
+- add actual foo() in kernel/sys.c. "asmlinkage long sys_foo(void) {return
+  THREAD_SIZE;}"
+
+5.12
+One alternative of adding a new system call is implementing a device node and
+read() and write() to it. Use ioctl() to manipulate specific settings or 
+retrieve specific information.
+
+
 
