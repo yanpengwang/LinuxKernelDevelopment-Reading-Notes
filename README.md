@@ -543,8 +543,94 @@ is disabled. in_interrupt() and in_irq() provide an interface to check the
 kernel's current context.
 
 
+Chapter 8. Bottom Halves and Deferring Work
 
+8.1 top v.s bottom half
+- If the work is time sensitive, perform it in the interrupt handler.
+- If the work is related to the hardware, perform it in the interrupt handler.
+- If the work needs to ensure that another interrupt does not interrupt it, 
+  perform it in the interrupt handler.
+- For everything else, consider performing the work in the bottom half.
 
+8.2
+Often, bottom halves run immediately after the interrupt returns. The key is
+that they run with all interrupts enabled.
 
+8.3
+Softirqs are a set of statically defined bottom halves that can run 
+simultaneously on any processor; even two of the same type can run concurrently.
+Tasklets are dynamically created bottom halves built on top of softirqs.
+two of the same type of tasklet cannot run simultaneously. Softirqs are useful
+when the performance is critical, such as networking, softirqs must be registed
+statically at compile time. Conversely, code can dynamically register tasklets.
 
+8.4
+Softirqs are reserved for the most timing-critical and important bottom-half
+processing on the system. In kernel 2.6, only two subsystems - networking and
+block devies - derictly use softirqs.
+
+8.5
+Tasklets have a simpler interface and relaxed locking rules. As a device driver
+author, the decision whether to use softirqs versus tasklets is simple: You 
+almost always want to use tasklets. All tasklets are multiplexed on top of two
+softirqs, HI_SOFTIRQ and TASKLET_SOFTIRQ.
+As with softirqs, tasklets cannot sleep. This means you cannot use semaphores
+or other blocking functions in a tasklet.
+
+8.6
+Work Queues defer work into a kernel thread - this bottom half always runs in
+process context. If the deferred work needs to sleep, work queues are used.
+The work handlers cannot access user-space memory because there is no associated
+user-space memory map for kernel threads. The kernel can access user memory only
+when running on behalf of a user-space process, such as when executing a system
+call. Only then is user memory mapped in.
+
+Chapter 9. An introduction to Kernel Synchronization
+
+9.1
+It is a bug if it is possible for two threads of execution to be simultaneously
+executing within the same critical region. We call it a race condition, so-named
+because the threads raced to get there first. Ensuring that unsafe concurrency 
+is prevented and that race conditions do not occur is called synchronization.
+
+9.2
+Process preemption with same critical region(share memory, file descriptor),
+or within a single program with signals, because signals can occur 
+asynchronously. This type of concurrency - in which two things do not actually
+happen at the same time but interleave with each other- is called pseudo-
+concurrency.
+On a symmetrical multiprocessing machine, two processes can actually be executed
+in a critical region at the exact same time, this is called true concurrency.
+Both kinds of concurrency can result in the same race conditions and require the
+same sort of protection.
+
+9.3
+The kernel has similar causes of concurrency:
+Interrupts, Softirqs and tasklets, Kernel preemption, Sleeping and 
+synchronization with user-space, symmetrical multiprocessing.
+
+9.4
+Implementing the actual locking in your code to protect shared data is not
+difficult, especially when done early on during design phase of development.
+The tricky part is identifying the actual shared data and the corresponding 
+critical sections. interrupt-safe, smp-safe, preempt-safe.
+
+9.5
+Lock data, not code.
+Whenever you write kernel code, ask yourself these questions:
+Is the data global?
+Is the data shared between process context and interrupt context? Is it shared
+between two different interrupt handlers?
+If a process is preempted while accessing this data, can the newly scheduled
+process access the same data?
+Can the current process sleep(block) on anything? If it does, in what state does
+that leave any shared data?
+What prevents the data from being freed out from under me?
+What happens if this function is called again on another processor?
+
+9.6
+A deadlock is a condition involving one or more threads of execution and one or
+more resources, such that each thread waits for one of the resources, but all 
+the resources are already held. The threads all wait for each other, but they 
+never make any progress toward releasing the resources that they already hold.
 
