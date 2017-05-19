@@ -634,3 +634,12 @@ more resources, such that each thread waits for one of the resources, but all
 the resources are already held. The threads all wait for each other, but they 
 never make any progress toward releasing the resources that they already hold.
 
+
+9.7
+Designing your locking from the beginning to scale well is important. Coarse locking of major 
+resources can easily become a bottleneck on even small machines.There is a thin line between 
+too-coarse locking and too-fine locking. Locking that is too coarse results in poor scalability 
+if there is high lock contention, whereas locking that is too fine results in wasteful overhead 
+if there is little lock contention. Both scenarios equate to poor performance. Start simple and 
+grow in complexity only as needed. Simplicity is key.
+
