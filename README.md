@@ -643,3 +643,56 @@ if there is high lock contention, whereas locking that is too fine results in wa
 if there is little lock contention. Both scenarios equate to poor performance. Start simple and 
 grow in complexity only as needed. Simplicity is key.
 
+10. Kernel Synchronization Methods
+
+10.1 
+The use of atomic_t ensures the compiler does not optimize access to the value - it is important
+the atomic operations receive the correct memory address and not an alias.
+
+10.2
+It is not wise to hold a spin lock for a long time.This is the nature of the
+spin lock: a lightweight single-holder lock that should be held for short durations.An alternative
+behavior when the lock is contended is to put the current thread to sleep and
+wake it up when it becomes available.Then the processor can go off and execute other
+code.This incurs a bit of overhead—most notably the two context switches required to
+switch out of and back into the blocking thread, which is certainly a lot more code than
+the handful of lines used to implement a spin lock.Therefore, it is wise to hold spin locks
+for less than the duration of two context switches. Later in this chapter we discuss semaphores, 
+which provide a lock that makes the waiting thread sleep, rather than spin, when contended.
+
+
+10.3
+It is possible for an interrupt handler to interrupt kernel code while the lock is held and attempt
+to reacquire the lock.The interrupt handler spins, waiting for the lock to become
+available.The lock holder, however, does not run until the interrupt handler completes.
+This is an example of the double-acquire deadlock discussed in the previous chapter. Note
+that you need to disable interrupts only on the current processor.
+
+10.4
+Reader-Writer Spin Locks:
+One or more readers can concurrently hold the reader lock.The writer lock, conversely, 
+can be held by at most one writer with no concurrent readers.
+
+10.5
+Because a thread of execution sleeps on lock contention, semaphores must be obtained
+only in process context because interrupt context is not schedulable.
+
+10.6
+a. Only one task can hold the mutex at a time.That is, the usage count on a mutex is
+always one. 
+b. Whoever locked a mutex must unlock it.That is, you cannot lock a mutex in one
+context and then unlock it in another.This means that the mutex isn’t suitable for
+more complicated synchronizations between kernel and user-space. Most use cases,
+however, cleanly lock and unlock from the same context.
+c. Recursive locks and unlocks are not allowed.That is, you cannot recursively acquire
+the same mutex, and you cannot unlock an unlocked mutex.
+d. A process cannot exit while holding a mutex.
+e. A mutex cannot be acquired by an interrupt handler or bottom half, even with mutex_trylock().
+f. A mutex can be managed only via the official API: It must be initialized via the methods
+described in this section and cannot be copied, hand initialized, or reinitialized.
+
+10.7
+The mb() call provides both a read barrier and a write barrier. No loads or stores will
+be reordered across a call to mb(). It is provided because a single instruction (often the
+same instruction used by rmb()) can provide both the load and store barrier.
+
