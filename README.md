@@ -696,3 +696,35 @@ The mb() call provides both a read barrier and a write barrier. No loads or stor
 be reordered across a call to mb(). It is provided because a single instruction (often the
 same instruction used by rmb()) can provide both the load and store barrier.
 
+
+11. Timers and Time Management
+
+11.1
+The tick rate has a frequency of HZ hertz and a period of 1/HZ seconds. 
+For example, by default the x86 architecture defines HZ to be 110.
+
+11.2
+This higher resolution and greater accuracy provides multiple advantages:
+n Kernel timers execute with finer resolution and increased accuracy. 
+(This provides a large number of improvements, one of which is the following.)
+a. System calls such as poll()and select()that optionally employ a timeout value
+execute with improved precision.
+b. Measurements, such as resource usage or the system uptime, are recorded with a
+finer resolution.
+c. Process preemption occurs more accurately.
+
+11.3
+A higher tick rate implies
+more frequent timer interrupts, which implies higher overhead, because the processor
+must spend more time executing the timer interrupt handler.The higher the tick rate,
+the more time the processor spends executing the timer interrupt.
+
+11.4
+The kernel requires, however, that jiffies be reread on
+each iteration, as the value is incremented elsewhere: in the timer interrupt. Indeed, this is
+why the variable is marked volatile in <linux/jiffies.h>.The volatile keyword
+instructs the compiler to reload the variable on each access from main memory and
+never alias the variable’s value in a register, guaranteeing that the previous loop completes
+as expected.
+
+
